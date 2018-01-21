@@ -1,6 +1,6 @@
 # ansible-iptables-exporter
 
-refference:-
+reference
 
 https://pypi.python.org/pypi/iptables-exporter/ 
 
