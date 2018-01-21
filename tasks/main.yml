@@ -1,0 +1,63 @@
+---
+
+
+
+
+- name: Install Python
+  apt:
+   name: python-pip
+   state: present
+
+- name: install iptable exporter
+  pip:
+   name: iptables-exporter
+   state: present
+
+
+- name: create systemd service unit
+  template:
+    src: etc/systemd/system/prometheus-iptables-exporter.service.j2
+    dest: /etc/systemd/system/prometheus-iptables-exporter.service
+    owner: root
+    group: root
+    mode: 0644
+  when: ansible_service_mgr == 'systemd'
+  notify:
+    - reenable iptables exporter service
+    - restart iptables exporter
+
+- name: Looking which version of upstart is install
+  command: initctl version
+  when: ansible_service_mgr == 'upstart'
+  register: upstart_version
+
+- name: create init service unit
+  template:
+    src: etc/init/prometheus-iptables-exporter.conf.j2
+    dest: /etc/init/prometheus-iptables-exporter.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: ansible_service_mgr == 'upstart'
+  notify:
+    - reinit iptables exporter
+    - restart iptables exporter
+
+- name: create sysvinit service unit
+  template:
+    src: etc/init.d/prometheus-iptables-exporter.j2
+    dest: /etc/init.d/prometheus-iptables-exporter
+    owner: root
+    group: root
+    mode: 0755
+  when: ansible_service_mgr == 'sysvinit'
+  notify:
+    - restart iptables exporter
+
+- meta: flush_handlers
+
+- name: ensure prometheus iptables exporter service is enabled and started
+  service:
+    name: prometheus-iptables-exporter
+    state: started
+    enabled: yes

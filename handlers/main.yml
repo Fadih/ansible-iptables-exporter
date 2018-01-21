@@ -1,0 +1,12 @@
+---
+
+- name: reenable iptables exporter service
+  command: systemctl reenable prometheus-iptables-exporter.service
+
+- name: reinit iptables exporter
+  command: initctl reload-configuration
+
+- name: restart iptables exporter
+  service:
+    name: prometheus-iptables-exporter
+    state: restarted

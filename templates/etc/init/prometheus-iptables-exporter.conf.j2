@@ -1,0 +1,16 @@
+description "Prometheus Iptables Exporter"
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on runlevel [016]
+
+respawn
+{% if upstart_version.stdout | replace("init (upstart ", "") |replace(")","") | version_compare('1.4', '>=') %}
+setuid root
+setgid root
+{% endif %}
+
+script
+  exec >> "/var/log/iptables-exporter.log"
+  exec 2>&1
+  exec /usr/local/bin/iptables-exporter
+
+end script
